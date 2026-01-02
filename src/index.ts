@@ -50,14 +50,26 @@ export class OpusMultistreamDecoder {
 
     private channels: number = 0
 
-    constructor(module: MainModule, sampleRate: number, channels: number, streams: number, coupled_channels: number, mapping: number) {
+    constructor(module: MainModule, sampleRate: number, channels: number, streams: number, coupled_channels: number, mappings: Array<number>) {
+        if (mappings.length < channels) {
+            throw new OpusError(OPUS_BAD_ARG)
+        }
+
         this.module = module
         this.channels = channels
 
         const stackTop = module.stackSave()
+
+        const mappingPtr = module.stackAlloc(mappings.length)
+        for (let index = 0; index < channels; index++) {
+            const mapping = mappings[index]
+
+            module.setValue(mappingPtr + index, mapping, "u8")
+        }
+
         const errorPtr = module.stackAlloc(4)
 
-        this.ptr = module._opus_multistream_decoder_create(sampleRate, channels, coupled_channels, streams, mapping, errorPtr)
+        this.ptr = module._opus_multistream_decoder_create(sampleRate, channels, coupled_channels, streams, mappingPtr, errorPtr)
 
         module.stackRestore(stackTop)
 
@@ -90,6 +102,7 @@ export class OpusMultistreamDecoder {
 
         this.checkPtr()
 
+        // TODO: should the stack or heap be used?
         let inputPtr = 0
         if (input) {
             inputPtr = this.module._malloc(input.byteLength)
