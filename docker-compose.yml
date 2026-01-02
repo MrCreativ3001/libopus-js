@@ -6,5 +6,5 @@ services:
       context: .
       dockerfile: Dockerfile
     volumes:
-      - ./libopus:/libopus:ro
+      - ./libopus:/libopus
       - ./build:/build
