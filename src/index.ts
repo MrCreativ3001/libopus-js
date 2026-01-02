@@ -1,13 +1,13 @@
-import type { MainModule } from "../build/libopus";
+import type { MainModule } from "./libopus.js";
 
-const OPUS_OK = 0;
-const OPUS_BAD_ARG = -1;
-const OPUS_BUFFER_TOO_SMALL = -2;
-const OPUS_INTERNAL_ERROR = -3;
-const OPUS_INVALID_PACKET = -4;
-const OPUS_UNIMPLEMENTED = -5;
-const OPUS_INVALID_STATE = -6;
-const OPUS_ALLOC_FAIL = -7;
+export const OPUS_OK = 0;
+export const OPUS_BAD_ARG = -1;
+export const OPUS_BUFFER_TOO_SMALL = -2;
+export const OPUS_INTERNAL_ERROR = -3;
+export const OPUS_INVALID_PACKET = -4;
+export const OPUS_UNIMPLEMENTED = -5;
+export const OPUS_INVALID_STATE = -6;
+export const OPUS_ALLOC_FAIL = -7;
 
 export class OpusError extends Error {
     static getMessageFromCode(errorCode: number): string {
@@ -33,24 +33,93 @@ export class OpusError extends Error {
         }
     }
 
+    readonly errorCode: number
+
     constructor(errorCode: number) {
-        super(OpusError.getMessageFromCode(errorCode));
-        this.name = "OpusError";
+        super(OpusError.getMessageFromCode(errorCode))
+        this.name = "OpusError"
+
+        this.errorCode = errorCode
     }
 }
 
 // https://www.opus-codec.org/docs/opus_api-1.1.2/group__opus__multistream.html
 export class OpusMultistreamDecoder {
     private module: MainModule
-    private ptr: number | null = null
+    private ptr: number = 0
+
+    private channels: number = 0
 
     constructor(module: MainModule, sampleRate: number, channels: number, streams: number, coupled_channels: number, mapping: number) {
         this.module = module
+        this.channels = channels
 
-        this.ptr = module._opus_multistream_decoder_create(sampleRate, channels, coupled_channels, streams, mapping, error)
+        const stackTop = module.stackSave()
+        const errorPtr = module.stackAlloc(4)
+
+        this.ptr = module._opus_multistream_decoder_create(sampleRate, channels, coupled_channels, streams, mapping, errorPtr)
+
+        module.stackRestore(stackTop)
+
+        const error = this.module.getValue(errorPtr, "i32")
+        if (error != OPUS_OK) {
+            throw new OpusError(error)
+        }
     }
 
-    init() {
-        this.module._opus_multistream_decoder_init
+    private checkPtr() {
+        if (this.ptr == 0) {
+            throw new OpusError(OPUS_INVALID_STATE)
+        }
+    }
+
+    /**
+     * Decode a multistream Opus packet with floating point output.
+     * @param input Input payload. Use a NULL pointer to indicate packet loss.
+     * @param output Output signal, with interleaved samples. This must contain room for frame_size*channels samples.
+     * @param frameSize The number of samples per channel of available space in pcm. If this is less than the maximum packet duration (120 ms; 5760 for 48kHz), this function will not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1), then frame_size needs to be exactly the duration of audio that is missing, otherwise the decoder will not be in the optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size must be a multiple of 2.5 ms.
+     * @param decodeFec Request that any in-band forward error correction data be decoded. If no such data is available, the frame is decoded as if it were lost.
+     * @returns Number of samples decoded
+     */
+    decodeFloat(input: ArrayBuffer | null, output: ArrayBuffer, frameSize: number, decodeFec: boolean): number {
+        const outputSize = this.channels * frameSize * 4
+        // 4 bytes per float
+        if (output.byteLength < outputSize) {
+            throw new OpusError(OPUS_BUFFER_TOO_SMALL)
+        }
+
+        this.checkPtr()
+
+        let inputPtr = 0
+        if (input) {
+            inputPtr = this.module._malloc(input.byteLength)
+            this.module.writeArrayToMemory(input, inputPtr)
+        }
+
+        const outputPtr = this.module._malloc(outputSize)
+
+        const result = this.module._opus_multistream_decode_float(this.ptr, inputPtr, input?.byteLength ?? 0, outputPtr, frameSize, decodeFec ? 1 : 0)
+
+        if (inputPtr != null) {
+            this.module._free(inputPtr)
+        }
+
+        if (result < 0) {
+            this.module._free(outputPtr)
+            throw new OpusError(result)
+        }
+
+        const outputBuffer = new Float32Array(this.module.HEAPF32.buffer, outputPtr, this.channels * frameSize)
+        new Float32Array(output).set(outputBuffer, 0)
+        this.module._free(outputPtr)
+
+        return result
+    }
+
+    destroy() {
+        this.checkPtr()
+
+        this.module._opus_multistream_decoder_destroy(this.ptr)
+        this.ptr = 0
     }
 }
