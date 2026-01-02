@@ -28,6 +28,7 @@ declare namespace RuntimeExports {
      */
     function getValue(ptr: number, type?: string): any;
     function writeArrayToMemory(array: any, buffer: any): void;
+    let HEAPU8: any;
     let HEAPF32: any;
 }
 interface WasmModule {

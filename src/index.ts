@@ -64,7 +64,10 @@ export class OpusMultistreamDecoder {
         for (let index = 0; index < channels; index++) {
             const mapping = mappings[index]
 
-            module.setValue(mappingPtr + index, mapping, "u8")
+            if (mapping < 0 || mapping > 255) {
+                throw new OpusError(OPUS_BAD_ARG)
+            }
+            module.HEAPU8[mappingPtr + index] = mapping
         }
 
         const errorPtr = module.stackAlloc(4)
