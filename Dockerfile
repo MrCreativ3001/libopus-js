@@ -10,7 +10,9 @@ RUN apt-get update && \
 WORKDIR /emscrypten
 
 RUN ./emsdk install latest && \
-    ./emsdk activate latest
+    ./emsdk activate latest && \
+    . ./emsdk_env.sh && \
+    npm i typescript -g
 
 COPY build.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
