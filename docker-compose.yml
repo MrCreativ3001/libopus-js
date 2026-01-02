@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  opus-build:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./libopus:/libopus:ro
+      - ./build:/build
