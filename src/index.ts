@@ -1,35 +1,35 @@
-import type { MainModule } from "./libopus.js";
+import type { MainModule } from "./libopus.js"
 
-export const OPUS_OK = 0;
-export const OPUS_BAD_ARG = -1;
-export const OPUS_BUFFER_TOO_SMALL = -2;
-export const OPUS_INTERNAL_ERROR = -3;
-export const OPUS_INVALID_PACKET = -4;
-export const OPUS_UNIMPLEMENTED = -5;
-export const OPUS_INVALID_STATE = -6;
-export const OPUS_ALLOC_FAIL = -7;
+export const OPUS_OK = 0
+export const OPUS_BAD_ARG = -1
+export const OPUS_BUFFER_TOO_SMALL = -2
+export const OPUS_INTERNAL_ERROR = -3
+export const OPUS_INVALID_PACKET = -4
+export const OPUS_UNIMPLEMENTED = -5
+export const OPUS_INVALID_STATE = -6
+export const OPUS_ALLOC_FAIL = -7
 
 export class OpusError extends Error {
     static getMessageFromCode(errorCode: number): string {
         switch (errorCode) {
             case OPUS_OK:
-                return "Ok";
+                return "Ok"
             case OPUS_BAD_ARG:
-                return "Bad Argument";
+                return "Bad Argument"
             case OPUS_BUFFER_TOO_SMALL:
-                return "Buffer Too Small";
+                return "Buffer Too Small"
             case OPUS_INTERNAL_ERROR:
-                return "Internal Error";
+                return "Internal Error"
             case OPUS_INVALID_PACKET:
-                return "Invalid Packet";
+                return "Invalid Packet"
             case OPUS_UNIMPLEMENTED:
-                return "Unimplemented Feature";
+                return "Unimplemented Feature"
             case OPUS_INVALID_STATE:
-                return "Invalid State";
+                return "Invalid State"
             case OPUS_ALLOC_FAIL:
-                return "Memory Allocation Failed";
+                return "Memory Allocation Failed"
             default:
-                return `Unknown Opus error code: ${errorCode}`;
+                return `Unknown Opus error code: ${errorCode}`
         }
     }
 
@@ -77,7 +77,7 @@ export class OpusMultistreamDecoder {
      * Decode a multistream Opus packet with floating point output.
      * @param input Input payload. Use a NULL pointer to indicate packet loss.
      * @param output Output signal, with interleaved samples. This must contain room for frame_size*channels samples.
-     * @param frameSize The number of samples per channel of available space in pcm. If this is less than the maximum packet duration (120 ms; 5760 for 48kHz), this function will not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1), then frame_size needs to be exactly the duration of audio that is missing, otherwise the decoder will not be in the optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size must be a multiple of 2.5 ms.
+     * @param frameSize The number of samples per channel of available space in pcm. If this is less than the maximum packet duration (120 ms 5760 for 48kHz), this function will not be capable of decoding some packets. In the case of PLC (data==NULL) or FEC (decode_fec=1), then frame_size needs to be exactly the duration of audio that is missing, otherwise the decoder will not be in the optimal state to decode the next incoming packet. For the PLC and FEC cases, frame_size must be a multiple of 2.5 ms.
      * @param decodeFec Request that any in-band forward error correction data be decoded. If no such data is available, the frame is decoded as if it were lost.
      * @returns Number of samples decoded
      */
