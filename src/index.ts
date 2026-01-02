@@ -109,7 +109,7 @@ export class OpusMultistreamDecoder {
         let inputPtr = 0
         if (input) {
             inputPtr = this.module._malloc(input.byteLength)
-            this.module.writeArrayToMemory(input, inputPtr)
+            this.module.writeArrayToMemory(new Uint8Array(input), inputPtr)
         }
 
         const outputPtr = this.module._malloc(outputSize)
