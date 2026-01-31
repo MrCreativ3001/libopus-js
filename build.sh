@@ -26,8 +26,10 @@ emcc /build/.libs/libopus.a \
     -o libopus.js \
     -s MODULARIZE=1 \
     -s EXPORT_ES6=1 \
+    -s ENVIRONMENT=web \
+    -s SINGLE_FILE=1 \
     -s EXPORTED_FUNCTIONS="['_malloc','_free','_opus_multistream_decoder_create','_opus_multistream_decode_float','_opus_multistream_decoder_destroy']" \
-    -s EXPORTED_RUNTIME_METHODS="['cwrap','ccall','stackAlloc','stackSave','stackRestore','setValue','getValue','writeArrayToMemory','HEAPU8','HEAPF32']" \
+    -s EXPORTED_RUNTIME_METHODS="['stackAlloc','stackSave','stackRestore','setValue','getValue','writeArrayToMemory','HEAPU8','HEAPF32']" \
     --emit-tsd libopus.d.ts
 
 echo "libopus build successful"

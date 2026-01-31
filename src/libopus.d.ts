@@ -1,18 +1,5 @@
 // TypeScript bindings for emscripten-generated code.  Automatically generated at compile time.
 declare namespace RuntimeExports {
-    /**
-     * @param {string=} returnType
-     * @param {Array=} argTypes
-     * @param {Object=} opts
-     */
-    function cwrap(ident: any, returnType?: string | undefined, argTypes?: any[] | undefined, opts?: any | undefined): (...args: any[]) => any;
-    /**
-     * @param {string|null=} returnType
-     * @param {Array=} argTypes
-     * @param {Array=} args
-     * @param {Object=} opts
-     */
-    function ccall(ident: any, returnType?: (string | null) | undefined, argTypes?: any[] | undefined, args?: any[] | undefined, opts?: any | undefined): any;
     function stackAlloc(sz: any): any;
     function stackSave(): any;
     function stackRestore(val: any): any;
