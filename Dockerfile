@@ -9,8 +9,8 @@ RUN apt-get update && \
 
 WORKDIR /emscrypten
 
-RUN ./emsdk install latest && \
-    ./emsdk activate latest && \
+RUN ./emsdk install releases-e44d3cc557d78155966478aa2bd8dec657609619-64bit node-22.16.0-64bit && \
+    ./emsdk activate releases-e44d3cc557d78155966478aa2bd8dec657609619-64bit node-22.16.0-64bit && \
     . ./emsdk_env.sh && \
     npm i typescript -g
 
